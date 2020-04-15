@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"time"
+	"os"
+	"os/signal"
 
 	"github.com/project-receptor/go-receptor/connection"
 	"github.com/spf13/cobra"
@@ -31,9 +32,10 @@ func nodeRun(cmd *cobra.Command, args []string) {
 	for _, peer := range viper.GetStringSlice("peer") {
 		go connection.Open(peer, acceptConnection)
 	}
-	for {
-		time.Sleep(1)
-	}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	<-c // wait for interrupt
 }
 
 func acceptConnection(rw *bufio.ReadWriter, conn net.Conn) {
