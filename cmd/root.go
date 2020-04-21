@@ -12,6 +12,7 @@ import (
 var (
 	cfgFile string
 	dataDir string
+	nodeID  string
 	debug   bool
 	peer    []string
 	rootCmd = &cobra.Command{
@@ -30,6 +31,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Turn on verbose output")
+	rootCmd.PersistentFlags().StringVar(&nodeID, "node_id", "", "The name of the Receptor node, will generate a uuid if not provided")
 	rootCmd.PersistentFlags().StringVar(&dataDir,
 		"data_dir",
 		"/var/lib/receptor",
@@ -38,6 +40,7 @@ func init() {
 	rootCmd.PersistentFlags().StringSliceVarP(&peer, "peer", "p", nil, "Peers to connect to directly")
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 	viper.BindPFlag("peer", rootCmd.PersistentFlags().Lookup("peer"))
+	viper.BindPFlag("node_id", rootCmd.PersistentFlags().Lookup("node_id"))
 }
 
 func er(msg interface{}) {
@@ -68,6 +71,5 @@ func initConfig() {
 			}
 		}
 	}
-	viper.SetDefault("Debug", false)
 	viper.AutomaticEnv()
 }
