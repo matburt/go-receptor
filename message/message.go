@@ -111,13 +111,13 @@ func (f *Frame) Serialize(b *bytes.Buffer) {
 // NOTE: Replace struct uuid with [16]byte and we can binary.Read(b....&Frame)
 func DeSerializeFrame(b *bytes.Buffer) *Frame {
 	newFrame := new(Frame)
-	binary.Read(b, binary.BigEndian, newFrame.Type)
-	binary.Read(b, binary.BigEndian, newFrame.Version)
-	binary.Read(b, binary.BigEndian, newFrame.Ident)
-	binary.Read(b, binary.BigEndian, newFrame.Length)
+	binary.Read(b, binary.BigEndian, &newFrame.Type)
+	binary.Read(b, binary.BigEndian, &newFrame.Version)
+	binary.Read(b, binary.BigEndian, &newFrame.Ident)
+	binary.Read(b, binary.BigEndian, &newFrame.Length)
 	var h, l [8]byte
-	binary.Read(b, binary.BigEndian, h)
-	binary.Read(b, binary.BigEndian, l)
+	binary.Read(b, binary.BigEndian, &h)
+	binary.Read(b, binary.BigEndian, &l)
 	message := h[:8]
 	newFrame.MessageID, _ = uuid.FromBytes(append(message, l[:8]...))
 	return newFrame

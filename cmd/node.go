@@ -8,7 +8,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/project-receptor/go-receptor/connection"
 	"github.com/project-receptor/go-receptor/message"
@@ -58,14 +57,23 @@ func onboardConnection(rw *bufio.ReadWriter, conn net.Conn) {
 	if ferror != nil {
 		fmt.Println("Flush error", ferror)
 	}
-	fmt.Println("Wrote bytes")
-	fmt.Println("Received bytes")
-	for {
-		lr := io.LimitReader(rw.Reader, 16482)
-		if _, err := io.Copy(os.Stdout, lr); err != nil {
-			time.Sleep(1)
-		}
+	helloFrameBytes := make([]byte, 26)
+	if nbytes, err := io.ReadFull(rw.Reader, helloFrameBytes); err != nil {
+		fmt.Printf("Received %v bytes and recorded error %v. Closing connection", nbytes, err)
+		return
 	}
+	helloFrameBuffer := bytes.NewBuffer(helloFrameBytes)
+	fmt.Println("helloframe bytes buffer", helloFrameBytes)
+	helloFrame := message.DeSerializeFrame(helloFrameBuffer)
+	fmt.Println("Hello Frame", helloFrame)
+	helloPayloadBytes := make([]byte, helloFrame.Length)
+	if nbytes, err := io.ReadFull(rw.Reader, helloPayloadBytes); err != nil {
+		fmt.Printf("Received %v bytes and recorded error %v. Closing connection", nbytes, err)
+		return
+	}
+	helloPayloadBuffer := bytes.NewBuffer(helloPayloadBytes)
+	helloFrameMessage := message.DeSerializeFramedMessage(helloPayloadBuffer, helloFrame)
+	fmt.Println("Hi message received ", helloFrameMessage)
 }
 
 func init() {
